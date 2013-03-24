@@ -1,0 +1,214 @@
+Grammar
+
+    0 $accept: line $end
+
+    1 line: command '\n'
+    2     | '\n'
+    3     | /* empty */
+
+    4 command: fgCommand
+    5        | fgCommand '&'
+
+    6 fgCommand: progInvocation redirect
+
+    7 progInvocation: STRING args
+
+    8 redirect: /* empty */
+    9         | '<' STRING redirect
+   10         | '>' STRING redirect
+
+   11 args: /* empty */
+   12     | args STRING
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'\n' (10) 1 2
+'&' (38) 5
+'<' (60) 9
+'>' (62) 10
+error (256)
+STRING (258) 7 9 10 12
+
+
+Nonterminals, with rules where they appear
+
+$accept (8)
+    on left: 0
+line (9)
+    on left: 1 2 3, on right: 0
+command (10)
+    on left: 4 5, on right: 1
+fgCommand (11)
+    on left: 6, on right: 4 5
+progInvocation (12)
+    on left: 7, on right: 6
+redirect (13)
+    on left: 8 9 10, on right: 6 9 10
+args (14)
+    on left: 11 12, on right: 7 12
+
+
+state 0
+
+    0 $accept: . line $end
+
+    STRING  shift, and go to state 1
+    '\n'    shift, and go to state 2
+
+    $default  reduce using rule 3 (line)
+
+    line            go to state 3
+    command         go to state 4
+    fgCommand       go to state 5
+    progInvocation  go to state 6
+
+
+state 1
+
+    7 progInvocation: STRING . args
+
+    $default  reduce using rule 11 (args)
+
+    args  go to state 7
+
+
+state 2
+
+    2 line: '\n' .
+
+    $default  reduce using rule 2 (line)
+
+
+state 3
+
+    0 $accept: line . $end
+
+    $end  shift, and go to state 8
+
+
+state 4
+
+    1 line: command . '\n'
+
+    '\n'  shift, and go to state 9
+
+
+state 5
+
+    4 command: fgCommand .
+    5        | fgCommand . '&'
+
+    '&'  shift, and go to state 10
+
+    $default  reduce using rule 4 (command)
+
+
+state 6
+
+    6 fgCommand: progInvocation . redirect
+
+    '<'  shift, and go to state 11
+    '>'  shift, and go to state 12
+
+    $default  reduce using rule 8 (redirect)
+
+    redirect  go to state 13
+
+
+state 7
+
+    7 progInvocation: STRING args .
+   12 args: args . STRING
+
+    STRING  shift, and go to state 14
+
+    $default  reduce using rule 7 (progInvocation)
+
+
+state 8
+
+    0 $accept: line $end .
+
+    $default  accept
+
+
+state 9
+
+    1 line: command '\n' .
+
+    $default  reduce using rule 1 (line)
+
+
+state 10
+
+    5 command: fgCommand '&' .
+
+    $default  reduce using rule 5 (command)
+
+
+state 11
+
+    9 redirect: '<' . STRING redirect
+
+    STRING  shift, and go to state 15
+
+
+state 12
+
+   10 redirect: '>' . STRING redirect
+
+    STRING  shift, and go to state 16
+
+
+state 13
+
+    6 fgCommand: progInvocation redirect .
+
+    $default  reduce using rule 6 (fgCommand)
+
+
+state 14
+
+   12 args: args STRING .
+
+    $default  reduce using rule 12 (args)
+
+
+state 15
+
+    9 redirect: '<' STRING . redirect
+
+    '<'  shift, and go to state 11
+    '>'  shift, and go to state 12
+
+    $default  reduce using rule 8 (redirect)
+
+    redirect  go to state 17
+
+
+state 16
+
+   10 redirect: '>' STRING . redirect
+
+    '<'  shift, and go to state 11
+    '>'  shift, and go to state 12
+
+    $default  reduce using rule 8 (redirect)
+
+    redirect  go to state 18
+
+
+state 17
+
+    9 redirect: '<' STRING redirect .
+
+    $default  reduce using rule 9 (redirect)
+
+
+state 18
+
+   10 redirect: '>' STRING redirect .
+
+    $default  reduce using rule 10 (redirect)
