@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include "def.h"
@@ -19,6 +20,27 @@ void clear(command cmd) {
     cmd->args = NULL;
 }
 
+void error_handler(int err) {
+    switch (err) {
+	case ENOENT:	printf("user-sh: command or filename not found\n");
+			break;
+	case EACCES:	printf("user-sh: permission denied\n");
+			break;
+	default:	printf("user-sh: error\n");
+    }
+}
+
+void redirect2(char rw, int file_desc, char* file, int is_append) {
+    int f; 
+    if (rw == 'r') {
+	f = open(file, O_CREAT | O_RDONLY, S_IRWXU);
+    } else {
+	f = open(file, O_CREAT | O_WRONLY | (is_append?O_APPEND:O_TRUNC), 0644);
+    }
+    close(file_desc);
+    dup(f);
+}
+
 
 void exec_ext_command() {
     pid_t pid;
@@ -28,14 +50,15 @@ void exec_ext_command() {
 	printf("FORK ERROR\n");
 	exit(2);
     } else if (pid == 0) {
+	// io redirection
+	if (cmd->input) 
+	    redirect2('r', 0, cmd->input, 0);
+	if (cmd->output)
+	    redirect2('w', 1, cmd->output, cmd->append);
+
+	// execute
 	if (execvp(cmd->cmd, cmd->args) < 0) {
-	    switch (errno) {
-		case ENOENT:	printf("user-sh: command or filename not found\n");
-				break;
-		case EACCES:	printf("user-sh: permission denied\n");
-				break;
-		default:	printf("user-sh: error\n");
-	    }
+	    error_handler(errno);
 	}
 	exit(3);
     } else {

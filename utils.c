@@ -1,12 +1,9 @@
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 #include "def.h"
 
 char *USER;
-command cmd;
+extern command cmd;
 
 char * get_current_dir() {
 	char *pwd = malloc(256 * sizeof(char));
@@ -22,22 +19,18 @@ void prompt() {
 	printf("%s@%s> ", USER, get_current_dir());
 }
 
-void clear(command cmd) {
-	cmd->argc = 0;
+void init() {
+	USER = getenv("USER");
+	
+	cmd = malloc(3 * sizeof(int));
 	cmd->cmd = NULL;
 	cmd->input = NULL;
 	cmd->output = NULL;
 	cmd->args = NULL;
+	cmd->argc = 1;
 }
 
-void init() {
-	USER = getenv("USER");
-	
-	cmd = malloc(2 * sizeof(int));
-	clear(cmd);
-}
-
-void execute() {
+void debug() {
     char **p;
     int i;
     printf("The command is: %s\n", cmd->cmd);
@@ -56,5 +49,4 @@ void execute() {
     if (cmd->output) {
 	printf("output directed to: %s\n", cmd->output);
     }
-    clear(cmd);
 }

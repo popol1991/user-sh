@@ -1,17 +1,34 @@
+/* it would be better to use substitution to make pattern more readible.
+   it seems the substitution doesn't work on my machine, need help!	*/
+META		[&<>\n]
+continue	\\\n
 %{
-	#include "y.tab.h"
+    #include "def.h"
+    #include "y.tab.h"
 %}
 
 %%
 
-[&<>\n]			{ return *yytext; }
+	/* skip blank */
+[ \t\r]	 	;
 
-[^ &<>\n\t\r]*	{ 
-		// remove the commention for debugging
-		// printf("a string: %s\n", yytext);
-	  	return STRING; }
+	/* the command is not finished yet when there's an '\' at the end of the line */
+\\\n		; 
 
-[ \t\r] 	;
+
+	/* metacharacter with special meaning in command */
+[|&<>\n]		{ 	
+			   //printf("meta: %s\n", yytext); 
+			   return *yytext; 
+			}
+
+	/* string separated by space or metacharacter */
+[^ \t\r|&<>\n]*		{ 
+			    yylval = strdup(yytext);	// since yytext is part of the input buffer
+							// and we don't wanna mingle with input buffer
+							// we need to duplicate the string here
+			    return STRING; 
+			}
 
 %%
 
