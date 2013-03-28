@@ -16,13 +16,13 @@ char * get_current_dir() {
 }
 
 void prompt() {
-	printf("%s@%s> ", USER, get_current_dir());
+	printf("%s@%s> ", USER, get_current_dir_name());
 }
 
 void init() {
 	USER = getenv("USER");
 	
-	cmd = malloc(3 * sizeof(int));
+	cmd = malloc(sizeof(struct simple_cmd));
 	cmd->cmd = NULL;
 	cmd->input = NULL;
 	cmd->output = NULL;
