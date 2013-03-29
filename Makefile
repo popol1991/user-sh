@@ -5,20 +5,19 @@ YACC = bison -d -y
 # C Compiler
 CC = cc
 
-debug: CC += -g
-debug: user-sh
-
 # user-sh is the final excutable
-user-sh: y.tab.o lex.yy.o execute.o utils.o
-	$(CC) -o user-sh y.tab.o lex.yy.o execute.o internalcmd.o utils.o -ll -lm
+user-sh: y.tab.o lex.yy.o execute.o utils.o cmd_list.o
+	$(CC) -o user-sh y.tab.o lex.yy.o execute.o internalcmd.o utils.o cmd_list.o -ll -lm
 
 
 lex.yy.o: lex.yy.c y.tab.h
-lex.yy.o y.tab.o: def.h
+lex.yy.o y.tab.o: def.h cmd_list.o
 
-utils.o: def.h
+utils.o: def.h cmd_list.o
 
-execute.o: def.h internalcmd.o
+execute.o: def.h internalcmd.o cmd_list.o
+
+cmd_list.o: def.h
 
 internalcmd.o: def.h
 
@@ -27,6 +26,9 @@ y.tab.c y.tab.h: yacc.y
 
 lex.yy.c: lexer.l
 	$(LEX) lexer.l
+
+debug: CC += -g
+debug: user-sh
 
 
 clean:
