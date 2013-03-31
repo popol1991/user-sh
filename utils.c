@@ -1,3 +1,4 @@
+#define  _GNU_SOURCE
 #include <unistd.h>
 
 #include "def.h"
@@ -30,7 +31,7 @@ char * get_current_dir() {
 }
 
 void prompt() {
-    printf("%s@%s> ", USER, get_current_dir());
+    printf("%s@%s> ", USER, get_current_dir_name());
 }
 
 void init() {
