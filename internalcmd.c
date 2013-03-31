@@ -6,11 +6,14 @@ void cd(char* dir) {
 
 void jobs() {
 	// implement jobs here
-	printf("output of jobs\n");
 }
 
 void history() {
 	// implement history here
+}
+
+void jobs() {
+	// implement jobs here
 }
 
 void fg(int jid) {
