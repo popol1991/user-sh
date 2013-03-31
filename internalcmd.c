@@ -4,9 +4,6 @@ void cd(char* dir) {
 	// implement cd here
 }
 
-void jobs() {
-	// implement jobs here
-}
 
 void history() {
 	// implement history here
@@ -14,6 +11,7 @@ void history() {
 
 void jobs() {
 	// implement jobs here
+	printf("jobs!!\n");
 }
 
 void fg(int jid) {

@@ -10,7 +10,7 @@
 
 #define IS_INTERNAL(input, cmd) strcmp(input, cmd) == 0
 
-char* _INT_CMD[6] = {"exit", "cd", "jobs", "history", "bg", "fg"};
+char* _INT_CMD[5] = {"cd", "jobs", "history", "bg", "fg"};
 
 int STDIO[2];
 int is_bg = 0;
@@ -63,8 +63,41 @@ void reset_fd(int file_desc) {
 	close(STDIO[file_desc]);
 }
 
+int is_int_cmd(char* path) {
+	int i;
+	for (i = 0; i < LENGTH(_INT_CMD); i++) {
+		if (strcmp(_INT_CMD[i], path) == 0) 
+			return 1;
+	}
+	return 0;	
+}
 
 void exec_ext_command(command cmd) {
+	if (execvp(cmd->args[0], cmd->args) < 0) {
+		error_handler(errno);
+	}
+}
+
+void exec_int_command(command cmd) {
+	char* path = cmd->args[0];
+
+	// internal commands
+	if (IS_INTERNAL(path, "cd")) {
+		cd( cmd->args[1]?cmd->args[1]:"~" );
+	} else if (IS_INTERNAL(path, "jobs")) {
+		jobs();
+	} else if (IS_INTERNAL(path, "history")) {
+		history();
+	} else if (IS_INTERNAL(path, "fg")) {
+		fg(0);
+	} else if (IS_INTERNAL(path, "bg")) {
+		bg(0);
+	} else {
+		printf("error internal command\n");
+	}
+}
+
+void exec_command(command cmd) {
     pid_t pid;
 	char* temp;
     
@@ -73,12 +106,12 @@ void exec_ext_command(command cmd) {
 		printf("FORK ERROR\n");
 		exit(2);
     } else if (pid == 0) {
-		// printf("%d\n", count);
 		connect_pipe();
-
-		// child process 
-		if (execvp(cmd->args[0], cmd->args) < 0) {
-			error_handler(errno);
+		
+		if (is_int_cmd( cmd->args[0] )) {
+			exec_int_command(cmd);
+		} else {
+			exec_ext_command(cmd);
 		}
 
 		exit(0);
@@ -90,14 +123,6 @@ void exec_ext_command(command cmd) {
 }
 
 
-int is_int_cmd(char* path) {
-	int i;
-	for (i = 0; i < LENGTH(_INT_CMD); i++) {
-		if (strcmp(_INT_CMD[i], path) == 0) 
-			return 1;
-	}
-	return 0;	
-}
 
 void execute() {
 	cmd_list p = head->next;
@@ -106,7 +131,6 @@ void execute() {
 	len = length(head);
 	STDIO[0] = dup(0);
 	STDIO[1] = dup(1);
-	// printf("length: %d\n", len);
 	while (p) {
 		count++;
 		cmd = p->cmd;
@@ -116,7 +140,6 @@ void execute() {
 		if (len != 1 && count != len) {
 			if (pipe(current_pipe) != 0) 
 				printf("error in making pipe\n");
-			//printf("current pipe: %d %d\n", current_pipe[0], current_pipe[1]);
 		}
 
 		// io redirection
@@ -125,34 +148,10 @@ void execute() {
 		if (cmd->output) 
 			redirect2(1, cmd->output, cmd->append);
 		
+		if (strcmp(cmd->args[0], "exit") == 0) exit(0);
+
+		exec_command( cmd );
 		
-		//printf("before cmd %d\n", count);
-
-		char* path = cmd->args[0];
-		if (is_int_cmd(path)) {
-			connect_pipe();
-
-			// internal commands
-			if (IS_INTERNAL(path, "exit")) {
-				exit(0);
-			} else if (IS_INTERNAL(path, "cd")) {
-				cd( cmd->args[1]?cmd->args[1]:"~" );
-			} else if (IS_INTERNAL(path, "jobs")) {
-				jobs();
-			} else if (IS_INTERNAL(path, "history")) {
-				history();
-			} else if (IS_INTERNAL(path, "fg")) {
-				fg(0);
-			} else if (IS_INTERNAL(path, "bg")) {
-				bg(0);
-			} else {
-				printf("error internal command\n");
-			}
-		} else {
-			// external commands
-			exec_ext_command( cmd );
-		}
-
 		// reset io file descriptor
 		if (cmd->input)
 			reset_fd(0);
