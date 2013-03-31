@@ -44,3 +44,13 @@ int clear_list(cmd_list head) {
     head->next = NULL;
     return 0;
 }
+
+int length(cmd_list head) {
+    cmd_list p = head;
+    int count = 0;
+    while (p->next) {
+	p = p->next;
+	count++;
+    }
+    return count;
+}

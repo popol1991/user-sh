@@ -7,6 +7,8 @@
 
 #define YYSTYPE char *
 
+#define LENGTH(x) sizeof(x)/sizeof((x)[0])
+
 struct simple_cmd {
     int argc;
     int append;
@@ -21,6 +23,7 @@ struct command_list {
     struct command_list* next;
 };
 typedef struct command_list* cmd_list;
+
 
 
 void init();
