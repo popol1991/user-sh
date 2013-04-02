@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <signal.h>
 
 #include "def.h"
 #include "cmd_list.h"
@@ -33,9 +34,10 @@ void prompt() {
     printf("%s@%s> ", USER, get_current_dir());
 }
 
+
 void init() {
     USER = getenv("USER");
-
+    
     head = init_cmd_list();
 }
 
