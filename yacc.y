@@ -85,11 +85,7 @@ void yyerror(char *s) {
 
 void init_temp_cmd() {
     cmd = malloc(sizeof(struct simple_cmd));
-    cmd->argc = 0;
-    cmd->args = NULL;
-    cmd->append = 0;
-    cmd->input = NULL;
-    cmd->output = NULL;
+    clear_temp_cmd(cmd);
 }
 
 void stop() {
