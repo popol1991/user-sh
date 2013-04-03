@@ -10,6 +10,7 @@
 
 #define IS_INTERNAL(input, cmd) strcmp(input, cmd) == 0
 
+extern Env_History envhis;
 char* _INT_CMD[6] = {"exit", "cd", "jobs", "history", "bg", "fg"};
 
 int STDIO[2];
@@ -100,6 +101,7 @@ int is_int_cmd(char* path) {
 }
 
 void execute() {
+	int i=0;  //use to record free history pointers
 	cmd_list p = head->next;
 	command cmd = NULL;
 	count = 0;
@@ -107,6 +109,14 @@ void execute() {
 	STDIO[0] = dup(0);
 	STDIO[1] = dup(1);
 	// printf("length: %d\n", len);
+	
+	envhis->end = (envhis->end + 1) % CMD_NUMBERS;
+	if (envhis->end == envhis->start) 
+		envhis->start = (envhis->start + 1) % CMD_NUMBERS;
+	
+	envhis->his_cmd[envhis->end] = strdup(head->next->cmd->args[0]);
+	
+
 	while (p) {
 		count++;
 		cmd = p->cmd;
@@ -134,6 +144,10 @@ void execute() {
 
 			// internal commands
 			if (IS_INTERNAL(path, "exit")) {
+				for(i=0; i<CMD_NUMBERS; i++)
+				{
+					free(envhis->his_cmd[i]);
+				}
 				exit(0);
 			} else if (IS_INTERNAL(path, "cd")) {
 				cd( cmd->args[1]?cmd->args[1]:"~" );

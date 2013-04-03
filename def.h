@@ -9,6 +9,8 @@
 
 #define LENGTH(x) sizeof(x)/sizeof((x)[0])
 
+#define CMD_NUMBERS 100
+
 struct simple_cmd {
     int argc;
     int append;
@@ -24,7 +26,13 @@ struct command_list {
 };
 typedef struct command_list* cmd_list;
 
-
+struct ENV_HISTORY
+{
+	int start;
+	int end;
+	char *his_cmd[CMD_NUMBERS];
+};
+typedef struct ENV_HISTORY* Env_History;
 
 void init();
 void prompt();
