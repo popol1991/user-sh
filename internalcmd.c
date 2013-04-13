@@ -1,4 +1,3 @@
-#include "def.h"
 
 void cd(char* dir) {
 	// implement cd here
