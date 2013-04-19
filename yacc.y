@@ -7,7 +7,7 @@
     extern char *yytext;
     extern int is_bg;
     extern cmd_list head;
-
+    extern char* cmd_input;
     command cmd = NULL;
 %}
 
@@ -102,8 +102,8 @@ int main(void) {
     while (1) {
         prompt();
         if (yyparse() == 0) {
-	    execute();
-	}
+            execute();
+        }
     }
     return 0;
 }

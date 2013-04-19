@@ -17,6 +17,7 @@ int is_bg = 0;
 int count, len;
 int pre_pipe[2], current_pipe[2];
 cmd_list head;
+char* cmd_input;
 
 struct pid_node {
     pid_t		pid;

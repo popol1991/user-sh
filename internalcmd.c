@@ -10,7 +10,6 @@ void history() {
 
 void jobs() {
 	// implement jobs here
-	printf("jobs!!\n");
 }
 
 void fg(int jid) {
