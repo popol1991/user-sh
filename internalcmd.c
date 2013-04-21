@@ -95,6 +95,8 @@ joblist add_job(struct pid_node* plist, char* cmd) {
     return new;
 }
 
+/* mark a job as DONE if and only if all the processes  *
+ * of the job have existed                              */
 void remove_job(int sig, siginfo_t *sip, void* nosed) {
     pid_t pid;
     struct pid_node* p, *temp;

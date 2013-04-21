@@ -60,6 +60,6 @@ void prompt();
 void execute();
 void init_temp_cmd();
 void clear_temp_cmd(command cmd);
-void stop();
+void check_job_list();
 
 #endif
