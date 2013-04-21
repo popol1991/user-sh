@@ -5,10 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <signal.h>
 
 #define YYSTYPE char *
 
 #define LENGTH(x) sizeof(x)/sizeof((x)[0])
+
+#define RUNNING 1
+#define STOPPED 0
+#define DONE -1
 
 struct simple_cmd {
     int argc;
@@ -25,6 +30,18 @@ struct command_list {
 };
 typedef struct command_list* cmd_list;
 
+struct pid_node {
+    pid_t		pid;
+    struct pid_node	*next;
+};
+
+struct jobs_node {
+	struct pid_node* plist;
+	char* cmd;
+	int state;
+	struct jobs_node* next;
+};
+typedef struct jobs_node * joblist;
 
 
 void init();

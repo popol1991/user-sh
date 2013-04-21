@@ -18,10 +18,6 @@ int count, len;
 int pre_pipe[2], current_pipe[2];
 cmd_list head;
 
-struct pid_node {
-    pid_t		pid;
-    struct pid_node	*next;
-};
 struct pid_node* plist = NULL;
 
 void error_handler(int err) {
@@ -109,24 +105,24 @@ void exec_command(command cmd) {
     
     pid = fork();
     if (pid < 0) {
-	printf("FORK ERROR\n");
-	exit(2);
+		printf("FORK ERROR\n");
+		exit(2);
     } else if (pid == 0) {
-	connect_pipe();
+		connect_pipe();
 	
-	if (is_int_cmd( cmd->args[0] )) {
-		exec_int_command(cmd);
-	} else {
-		exec_ext_command(cmd);
-	}
+		if (is_int_cmd( cmd->args[0] )) {
+			exec_int_command(cmd);
+		} else {
+			exec_ext_command(cmd);
+		}
 
-	exit(0);
+		exit(0);
     } else {
-	// parent process
-	h = malloc(sizeof(struct pid_node));
-	h->pid = pid;
-	h->next = plist;
-	plist = h;
+		// parent process
+		h = malloc(sizeof(struct pid_node));
+		h->pid = pid;
+		h->next = plist;
+		plist = h;
     }	
 }
 

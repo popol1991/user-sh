@@ -7,6 +7,7 @@
 
 char *USER;
 extern cmd_list head;
+extern joblist jlist;
 
 void clear_temp_cmd(command cmd) {
     int i;
@@ -38,7 +39,7 @@ void prompt() {
 
 void init() {
     USER = getenv("USER");
-    
+    jlist = NULL;        
     head = init_cmd_list();
 }
 
