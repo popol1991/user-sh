@@ -1,6 +1,7 @@
 %{
     #include "def.h"
     #include "cmd_list.h"
+    #include "internalcmd.h"
 
     int yylex ();
     void yyerror(char *);
@@ -8,6 +9,7 @@
     extern int is_bg;
     extern cmd_list head;
     extern char* cmd_input;
+    extern joblist jlist;
     command cmd = NULL;
 %}
 
@@ -97,13 +99,40 @@ void stop() {
 }
 
 int main(void) {
+    joblist j, pre, temp;
+    int count;
     init();
     init_temp_cmd();
     while (1) {
         prompt();
         if (yyparse() == 0) {
+            cmd_input[strlen(cmd_input) - 1] = '\0';
             execute();
+            
         }
+        count = 1;
+        pre = NULL;
+        j = jlist;
+        while (j != NULL) {
+            if (j->state == DONE) {
+                printf("[%d]\tDone\t\t%s\n", count, j->cmd);
+                if (j == jlist) {
+                    j = j->next;
+                    free(jlist);
+                    jlist = j;
+                } else {
+                    temp = j;
+                    pre->next = j->next;
+                    j = j->next;
+                    free(temp);
+                }
+            } else {
+                pre = j;
+                j = j->next;
+            }
+            count++;
+        }
+        cmd_input[0] = '\0';
     }
     return 0;
 }

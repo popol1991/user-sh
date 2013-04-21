@@ -10,7 +10,9 @@
 
 #define IS_INTERNAL(input, cmd) strcmp(input, cmd) == 0
 
-char* _INT_CMD[5] = {"cd", "jobs", "history", "bg", "fg"};
+extern Env_History envhis;
+
+char* _INT_CMD[4] = {"cd", "jobs", "history", "bg"};
 
 int STDIO[2];
 int is_bg = 0;
@@ -18,6 +20,8 @@ int count, len;
 int pre_pipe[2], current_pipe[2];
 cmd_list head;
 char* cmd_input;
+extern joblist jlist;
+int goon = 0;
 
 struct pid_node* plist = NULL;
 
@@ -91,12 +95,16 @@ void exec_int_command(command cmd) {
     } else if (IS_INTERNAL(path, "history")) {
 	history();
     } else if (IS_INTERNAL(path, "fg")) {
-	fg(0);
+        fg(atoi(cmd->args[1]));
     } else if (IS_INTERNAL(path, "bg")) {
-	bg(0);
+        bg(atoi(cmd->args[1]));
     } else {
 	printf("error internal command\n");
     }
+}
+
+void setGoon() {
+    goon = 1;
 }
 
 void exec_command(command cmd) {
@@ -105,11 +113,18 @@ void exec_command(command cmd) {
     char* temp;
     
     pid = fork();
+    
+    signal(SIGUSR1, setGoon);
     if (pid < 0) {
 		printf("FORK ERROR\n");
 		exit(2);
     } else if (pid == 0) {
-		connect_pipe();
+        if (is_bg) {
+            while (goon == 0);
+            goon = 0;
+        }
+
+        connect_pipe();
 	
 		if (is_int_cmd( cmd->args[0] )) {
 			exec_int_command(cmd);
@@ -129,9 +144,19 @@ void exec_command(command cmd) {
 
 void waitcld() {
     struct pid_node *p = plist;
-    while (p != NULL) {
-	waitpid(p->pid, NULL, 0);
-	p = p->next;
+    joblist j;
+    int count = 0;
+    if (is_bg) {
+        add_job(plist, cmd_input);
+        for (count = 0, j = jlist; j != NULL; j = j->next, count++);
+        printf("[%d]\t%d\tRUNNING\t\t%s\n", count, plist->pid, cmd_input);
+        for (p = plist; p != NULL; p = p->next)
+            kill(p->pid, SIGUSR1);
+    } else {
+        for (p = plist; p != NULL; p = p->next) {
+            int status;
+            waitpid(p->pid, &status, WUNTRACED);
+        }
     }
 }
 
@@ -142,40 +167,55 @@ void execute() {
     len = length(head);
     STDIO[0] = dup(0);
     STDIO[1] = dup(1);
+
+    envhis->end = (envhis->end + 1) % CMD_NUMBERS;
+    if (envhis->end == envhis->start) 
+        envhis->start = (envhis->start + 1) % CMD_NUMBERS;
+    envhis->his_cmd[envhis->end] = strdup(cmd_input);
+    
     while (p) {
-	count++;
-	cmd = p->cmd;
-	
-	pre_pipe[0] = current_pipe[0];
-	pre_pipe[1] = current_pipe[1];
-	if (len != 1 && count != len) {
-		if (pipe(current_pipe) != 0) 
-			printf("error in making pipe\n");
-	}
+        count++;
+        cmd = p->cmd;
+        
+        pre_pipe[0] = current_pipe[0];
+        pre_pipe[1] = current_pipe[1];
+        if (len != 1 && count != len) {
+            if (pipe(current_pipe) != 0) 
+                printf("error in making pipe\n");
+        }
 
-	// io redirection
-	if (cmd->input) 
-		redirect2(0, cmd->input, 0);
-	if (cmd->output) 
-		redirect2(1, cmd->output, cmd->append);
-	
-	if (strcmp(cmd->args[0], "exit") == 0) exit(0);
+        // io redirection
+        if (cmd->input) 
+            redirect2(0, cmd->input, 0);
+        if (cmd->output) 
+            redirect2(1, cmd->output, cmd->append);
+        
+        if (strcmp(cmd->args[0], "exit") == 0) exit(0);
+        
+        if (IS_INTERNAL(cmd->args[0], "fg")) {
+            fg(atoi(cmd->args[1]));
+        } else if (IS_INTERNAL(cmd->args[0], "bg")) {
+            bg(atoi(cmd->args[1]));
+        } else if (IS_INTERNAL(cmd->args[0], "cd")) {
+            cd(cmd->args[1]);
+        } else {
+            exec_command( cmd );
+        }
+        
+        // reset io file descriptor
+        if (cmd->input)
+            reset_fd(0);
+        if (cmd->output) 
+            reset_fd(1);
 
-	exec_command( cmd );
-	
-	// reset io file descriptor
-	if (cmd->input)
-		reset_fd(0);
-	if (cmd->output) 
-		reset_fd(1);
+        if (len != 1 && count != len) 
+            close(current_pipe[1]);
 
-	if (len != 1 && count != len) 
-		close(current_pipe[1]);
-
-	//printf("after cmd %d\n", count);
-	p = p->next;
+        //printf("after cmd %d\n", count);
+        p = p->next;
     }
     waitcld();
+    clear_plist();
     clear_list(head);
 } 
 

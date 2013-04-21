@@ -11,6 +11,9 @@
 
 #define LENGTH(x) sizeof(x)/sizeof((x)[0])
 
+#define CMD_NUMBERS 100
+#define MAXDIRLEN 100
+
 #define RUNNING 1
 #define STOPPED 0
 #define DONE -1
@@ -29,6 +32,14 @@ struct command_list {
     struct command_list* next;
 };
 typedef struct command_list* cmd_list;
+
+struct ENV_HISTORY
+{
+    int start;
+    int end;
+    char *his_cmd[CMD_NUMBERS];
+};
+typedef struct ENV_HISTORY* Env_History;
 
 struct pid_node {
     pid_t		pid;
