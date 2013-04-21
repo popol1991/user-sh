@@ -96,6 +96,8 @@ void exec_int_command(command cmd) {
         fg(atoi(cmd->args[1]));
     } else if (IS_INTERNAL(path, "bg")) {
         bg(atoi(cmd->args[1]));
+    } else if (IS_INTERNAL(path, "pwd")) {
+        pwd();
     } else {
         printf("error internal command\n"); 
     }
