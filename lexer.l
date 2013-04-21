@@ -5,6 +5,8 @@ continue	\\\n
 %{
     #include "def.h"
     #include "y.tab.h"
+
+    extern char* cmd_input;
 %}
 
 %%
@@ -19,6 +21,8 @@ continue	\\\n
 	/* metacharacter with special meaning in command */
 [|&<>\n]		{ 	
 			   //printf("meta: %s\n", yytext); 
+               strcat(cmd_input, " ");
+               strcat(cmd_input, yytext);
 			   return *yytext; 
 			}
 
@@ -27,6 +31,12 @@ continue	\\\n
 			    yylval = strdup(yytext);	// since yytext is part of the input buffer
 							// and we don't wanna mingle with input buffer
 							// we need to duplicate the string here
+                if (strlen(cmd_input) == 0) 
+                    strcat(cmd_input, yytext);
+                else {
+                    strcat(cmd_input, " ");
+                    strcat(cmd_input, yytext);
+                }
 			    return STRING; 
 			}
 

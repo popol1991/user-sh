@@ -8,6 +8,7 @@
 char *USER;
 extern cmd_list head;
 extern joblist jlist;
+extern char* cmd_input;
 
 void clear_temp_cmd(command cmd) {
     int i;
@@ -40,6 +41,8 @@ void prompt() {
 void init() {
     USER = getenv("USER");
     jlist = NULL;        
+    cmd_input = malloc(1024 * sizeof(char));    
     head = init_cmd_list();
+
 }
 
